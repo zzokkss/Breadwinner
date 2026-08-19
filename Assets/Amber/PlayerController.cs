@@ -21,6 +21,10 @@ public class PlayerController : MonoBehaviour
 
     public float jumpPower = 5f;
 
+    public Transform groundCheckPos;
+    public Vector2 groundCheckSize = new Vector2(0.5f, 0.5f);
+    public LayerMask groundLayer;
+
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -86,6 +90,7 @@ public class PlayerController : MonoBehaviour
             if (ctx.canceled)
             {
                 isMoving = false;
+                rb.linearVelocity = Vector2.zero;
             }
         }
     }
@@ -113,6 +118,7 @@ public class PlayerController : MonoBehaviour
             Debug.Log("water"); 
             isGrounded = false;
             rb.gravityScale = 0f;
+            rb.linearVelocity = Vector2.zero;
             targetAction.Disable();
         }
     }
@@ -126,14 +132,32 @@ public class PlayerController : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext ctx)
     {
-        if (ctx.performed)
+        if (GroundCheck())
         {
-            Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-            float direction = Mathf.Sign(mousePosition.x - transform.position.x);
-            rb.linearVelocity = new Vector2(direction * moveSpeed, jumpPower);
+            if (ctx.performed)
+            {
+                Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+                float direction = Mathf.Sign(mousePosition.x - transform.position.x);
+                rb.linearVelocity = new Vector2(direction * moveSpeed, jumpPower);
 
-            isMoving = false;
+                isMoving = false;
+            }
         }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.white;
+        Gizmos.DrawWireCube(groundCheckPos.position, groundCheckSize);
+    }
+
+    private bool GroundCheck()
+    {
+        if (Physics2D.OverlapBox(groundCheckPos.position, groundCheckSize, 0, groundLayer))
+        {
+            return true;
+        }
+        return false;
     }
 
     }
