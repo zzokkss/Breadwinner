@@ -17,13 +17,17 @@ public class PlayerController : MonoBehaviour
     private InputAction targetAction;
 
     public float moveSpeed = 5f;
-    float horizontalMovement;
 
     public float jumpPower = 5f;
 
     public Transform groundCheckPos;
     public Vector2 groundCheckSize = new Vector2(0.5f, 0.5f);
     public LayerMask groundLayer;
+
+    public Animator anim;
+
+    public int facingDirection = 1;
+    private float horizontal;
 
     private void Start()
     {
@@ -38,17 +42,22 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+
         if (!isGrounded && Mouse.current.leftButton.isPressed)
         {
             Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
 
             targetPosition = mousePosition;
             isMoving = true;
-        }
 
-        if (Mathf.Abs(horizontalMovement) > 0.01f)
-        {
-            rb.linearVelocity = new Vector2(horizontalMovement * moveSpeed, rb.linearVelocity.y);
+            if (mousePosition.x > transform.position.x && facingDirection < 0)
+            {
+                Flip();
+            }
+            else if (mousePosition.x < transform.position.x && facingDirection > 0)
+            {
+                Flip();
+            }
         }
     }
 
@@ -58,6 +67,12 @@ public class PlayerController : MonoBehaviour
         {
             Vector2 newPosition = Vector2.MoveTowards(rb.position, targetPosition, speed * Time.deltaTime);
             rb.MovePosition(newPosition);
+            anim.SetBool("isWalking", true);
+        }
+
+        if (isMoving == false)
+        {
+            anim.SetBool("isWalking", false);
         }
 
         if (Vector2.Distance(rb.position, targetPosition) < 0.05f)
@@ -77,6 +92,17 @@ public class PlayerController : MonoBehaviour
                 targetPosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
                 targetPosition = new Vector2(mousePosition.x, rb.position.y);
                 isMoving = true;
+
+                float direction = mousePosition.x - transform.position.x;
+
+                if (direction > 0.1f && facingDirection < 0)
+                {
+                    Flip();
+                }
+                else if (direction < -0.1f && facingDirection > 0)
+                {
+                    Flip();
+                }
             }
         }
 
@@ -115,7 +141,7 @@ public class PlayerController : MonoBehaviour
 
         if (collision.gameObject.CompareTag("Water"))
         {
-            Debug.Log("water"); 
+            Debug.Log("water");
             isGrounded = false;
             rb.gravityScale = 0f;
             rb.linearVelocity = Vector2.zero;
@@ -124,12 +150,6 @@ public class PlayerController : MonoBehaviour
     }
 
     // JUMP STUFF
-
-    public void Move(InputAction.CallbackContext ctx)
-    {
-        horizontalMovement = ctx.ReadValue<Vector2>().x;
-    }
-
     public void OnJump(InputAction.CallbackContext ctx)
     {
         if (GroundCheck())
@@ -160,5 +180,13 @@ public class PlayerController : MonoBehaviour
         return false;
     }
 
+    private void Flip()
+    {
+        facingDirection *= -1;
+
+        Vector3 scale = transform.localScale;
+        scale.x *= -1;
+        transform.localScale = scale;
     }
 
+}
