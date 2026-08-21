@@ -80,6 +80,16 @@ public class PlayerController : MonoBehaviour
             isMoving = false;
         }
 
+        if (isGrounded == true)
+        {
+            Debug.Log("canjump");
+        }
+
+        if (isGrounded == false)
+        {
+            Debug.Log("cannotjump");
+        }
+
     }
 
     public void OnClick(InputAction.CallbackContext ctx)
