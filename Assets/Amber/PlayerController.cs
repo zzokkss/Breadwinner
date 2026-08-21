@@ -156,6 +156,7 @@ public class PlayerController : MonoBehaviour
         {
             if (ctx.performed)
             {
+                Debug.Log("jump");
                 Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
                 float direction = Mathf.Sign(mousePosition.x - transform.position.x);
                 rb.linearVelocity = new Vector2(direction * moveSpeed, jumpPower);
